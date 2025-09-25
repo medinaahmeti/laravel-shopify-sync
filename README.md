@@ -2,18 +2,18 @@
 
 
 ````md
-# Shopify Sync (Laravel 11)
+Shopify-Laravel Sync
 
 Minimal Laravel service that installs as a Shopify custom app and keeps local products in sync.
 
-- **1) Shopify OAuth** — install flow, HMAC verification, token persisted per shop.
-- **2) Products Sync** — artisan command: fetch all products, upsert normalized schema (title, description, variants, prices, inventory, images) with pagination + rate-limit handling.
-- **3) Webhooks** — register + process `products/create|update|delete`, verify signatures, queue worker executes processing.
-- **4) Read API** — `GET /api/products` (pagination + text search), `GET /api/products/{id}` (variants & images), Bearer token auth.
+- 1) Shopify OAuth — install flow, HMAC verification, token persisted per shop.
+- 2) Products Sync — artisan command: fetch all products, upsert normalized schema (title, description, variants, prices, inventory, images) with pagination + rate-limit handling.
+- 3) Webhooks — register + process `products/create|update|delete`, verify signatures, queue worker executes processing.
+- 4) Read API — `GET /api/products` (pagination + text search), `GET /api/products/{id}` (variants & images), Bearer token auth.
 
 ---
 
-## 0) Prerequisites
+0) Prerequisites
 
 - PHP 8.2+ (8.3/8.4 OK), Composer
 - SQLite
@@ -32,11 +32,11 @@ php artisan key:generate
 
 ```env
 APP_NAME="Shopify Sync"
-APP_URL=https://<your-https-tunnel>   # e.g. https://abc.trycloudflare.com
+APP_URL=https://<your-https-tunnel>
 
 # Shopify Admin API (from your app's API credentials)
-SHOPIFY_API_KEY=<API key>             # e.g. d2c96add03...
-SHOPIFY_API_SECRET=<API secret key>   # e.g. shpss_xxx... or hex for store-created apps
+SHOPIFY_API_KEY=<API key> 
+SHOPIFY_API_SECRET=<API secret key>
 SHOPIFY_API_VERSION=2025-07
 SHOPIFY_SCOPES=read_products,read_inventory,write_webhooks
 
@@ -53,19 +53,6 @@ DB_PORT=3306
 DB_DATABASE=shopify_sync
 DB_USERNAME=root
 DB_PASSWORD=
-```
-
-Force HTTPS URLs (required by Shopify):
-
-```php
-// app/Providers/AppServiceProvider.php (boot)
-use Illuminate\Support\Facades\URL;
-public function boot(): void {
-  if (str_starts_with((string) config('app.url'), 'https://')) {
-    URL::forceRootUrl(config('app.url'));
-    URL::forceScheme('https');
-  }
-}
 ```
 
 ---
@@ -98,10 +85,10 @@ php artisan serve --host=0.0.0.0 --port=8000
 
 ## 4) Shopify app creation
 
-### A) Store-created custom app (fastest, no OAuth screens)
+### Store-created custom app (fastest, no OAuth screens)
 
 * Admin → **Apps → Develop apps → Create an app**.
-* Copy **API key**, **API secret key**. (Admin token `shpat_…` will be revealed once.)
+* Copy **API key**, **API secret key**.
 * Put API key/secret in `.env`.
 * **Insert the `shpat_…` token into DB** (encrypted):
 
@@ -118,7 +105,7 @@ Shop::updateOrCreate(
 );
 ```
 
-You can now run sync and register webhooks.
+Run sync and register webhooks.
 
 ---
 
@@ -139,10 +126,6 @@ Run the worker:
 php artisan queue:work
 ```
 
-> **Changing tunnels?** Update `.env APP_URL`, clear config/cache, and re-run `shopify:webhooks:register` to point hooks to the new host.
-
----
-
 ## 6) Products Sync (REST, pagination + rate-limiting)
 
 Sync one shop:
@@ -154,7 +137,6 @@ php artisan shopify:sync yourstore.myshopify.com
 Notes:
 
 * Uses `limit=250` pages until exhausted.
-* Retries on 429/5xx with backoff; honors `Retry-After`/`X-Shopify-Shop-Api-Call-Limit`.
 * Upserts:
 
     * `products` — `shopify_id`, `title`, `description`, `status`
@@ -173,7 +155,7 @@ Notes:
 php artisan test
 ```
 
-### Only the 3 required specs
+### Required tests
 
 * **OAuth callback**
 
@@ -218,6 +200,3 @@ php artisan shopify:webhooks:list yourstore.myshopify.com
 # sync now
 php artisan shopify:sync yourstore.myshopify.com
 ```
- 
-
- 
