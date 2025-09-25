@@ -185,8 +185,30 @@ php artisan test --filter=SyncCommandTest
 ```
 ---
 
+## 8) Read API
 
-## 8) Commands to run
+**Auth:** Bearer token via `.env: API_TOKEN`.  
+**Base URL:** `${APP_URL}` (your HTTPS tunnel).
+
+### Endpoints
+
+#### GET `/api/products`
+- **Query params:**
+  - `query` — basic text search in `title`/`description` (optional).
+  - `per_page` — page size (1–100, default 25).
+  - `page` — page number (default 1).
+- **Auth:** `Authorization: Bearer <API_TOKEN>`
+- **Response:** Laravel paginator JSON:
+  - `data[]` — products (no relations)
+  - `links`, `meta` — pagination info
+
+**Example:**
+```bash
+curl -s -H "Authorization: Bearer $API_TOKEN" \
+  "${APP_URL}/api/products?query=gift&per_page=10"
+```
+
+## 9) Commands to run
 
 ```bash
 # run dev
